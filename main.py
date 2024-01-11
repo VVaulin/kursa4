@@ -2,6 +2,7 @@ import telebot
 from telebot import types
 import sql_query
 from re import split
+from datetime import datetime
 
 sq = sql_query.QueryTool()
 
@@ -17,7 +18,7 @@ bot = telebot.TeleBot('6031519919:AAFO0mD8GDuD3L8i9FFa1n9qJaNWMkfXP2E')
 
 @bot.message_handler(commands=['start'])
 def start_bot(message):
-    print(f'Пользователь {message.chat.id} запустил бота')
+    print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} запустил бота')
     global to_switch, to_del
     to_switch.clear()
     to_del.clear()
@@ -38,6 +39,7 @@ def start_bot(message):
 
 @bot.callback_query_handler(func=lambda call: call.data == 'begin')
 def begin_callback(call):
+    print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} подключается к базе данных...')
     if not sq.open_connection():
         markup = types.InlineKeyboardMarkup()
         begin_btn = types.InlineKeyboardButton(text='Повторить попытку', callback_data='begin')
@@ -48,8 +50,11 @@ def begin_callback(call):
             text='Не удалось подключиться к базе данных.',
             reply_markup=markup,
             parse_mode='Markdown')
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {call.from_user.id} не смог подключиться к базе данных')
     else:
         begin_callback(call)
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} успешно подключился к базе данных')
+
 
 # ========================================= Log in =========================================
 
@@ -85,6 +90,7 @@ def get_pass(message, user_login):
             message_id=to_switch[0].message_id,
             text='Вы были успешно авторизованы!\nДавайте приступим к работе.',
             reply_markup=markup)
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} успешно авторизовался.\nВведенный логин: {user_login}\nВведенный пароль: {user_password}')
     else:
         markup = types.InlineKeyboardMarkup()
         begin_btn = types.InlineKeyboardButton(text='Повторить попытку', callback_data='begin')
@@ -93,12 +99,15 @@ def get_pass(message, user_login):
                                'Ошибка авторизации. Неверный логин или пароль.',
                                reply_markup=markup)
         to_del.append(mes.message_id)
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {message.chat.id} не смог авторизироваться.\nВведенный логин: {user_login}\nВведенный пароль: {user_password}')
+
 
 # ========================================= Main Menu =========================================
 
 @bot.message_handler(commands=['menu'], func=lambda call: logged_in)
 @bot.callback_query_handler(func=lambda callback: callback.data == 'main_menu' and logged_in)
 def main_menu(call):
+    print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} перешел в главное меню')
     markup = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton('Регистрация', callback_data='reg_mm')
     btn2 = types.InlineKeyboardButton('Бронирование', callback_data='bk_mm')
@@ -145,6 +154,7 @@ def divide_str(text):
 
 @bot.callback_query_handler(func=lambda callback: callback.data.startswith('reg') and logged_in)
 def reg_handler(call):
+    print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} перешел в меню Регстрация')
     global to_switch
     if call.data == 'reg_mm':
         markup = types.InlineKeyboardMarkup()
@@ -160,12 +170,14 @@ def reg_handler(call):
             parse_mode='Markdown')
         to_switch = [mes]
     elif call.data == 'reg_add_per':
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} инициировал регистрацию клиента')
         mes = bot.send_message(
                   call.from_user.id,
                   'Введите данные через запятую, или каждое с новой строки\nДанные для ввода:\n\nИмя и фамилия\nНомер паспорта\nТелефонный номер\nЭлектранная почта')
         to_switch.append(mes)
         bot.register_next_step_handler(mes, reg_per_in)
-    elif call.data == 'reg_add_comp':
+    elif call.data == 'reg_add_comp':   # TODO: Дописать регистрацию
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} инициировал регистрацию компании')
         markup = gen_markup('reg_mm')
         bot.edit_message_text(
             chat_id=call.from_user.id,
@@ -195,13 +207,17 @@ def reg_per_in(message):
                 reply_markup=markup,
                 parse_mode='Markdown'
             )
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} успешно добавил нового клиента\nВнесенные данные\nИмя и фамилия: {flname}\nПаспорт: {pas}\nТелефонный номер: {phone}\nПочта: {mail}')
         else:
             bot.send_message(
                 message.from_user.id,
                 'При внесении данных возникла ошибка.',
                 reply_markup=markup,
                 parse_mode='Markdown')
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {message.chat.id} не смог зарегистрировать пользователя\nВнесенные данные\nИмя и фамилия: {flname}\nПаспорт: {pas}\nТелефонный номер: {phone}\nПочта: {mail}')
+
     else:
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {message.chat.id} не смог зарегистрировать пользователя\nНеверный ввод данных')
         bot.send_message(
             message.from_user.id,
             'Неверный ввод данных, повторите попытку.',
@@ -214,6 +230,7 @@ def reg_per_in(message):
 
 @bot.callback_query_handler(func=lambda callback: callback.data.startswith('bk') and logged_in)
 def bk_handler(call):
+    print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} перешел в меню Бронирование')
     global to_switch
     if call.data == 'bk_mm':
         markup = types.InlineKeyboardMarkup()
@@ -229,6 +246,7 @@ def bk_handler(call):
             parse_mode='Markdown')
         to_switch = [mes]
     elif call.data == 'bk_act':
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} вывел список активной брони')
         bk_active = sq.bk_active()
         markup = gen_markup('bk_mm')
         if bk_active is not None:
@@ -257,6 +275,7 @@ def bk_handler(call):
                 reply_markup=markup,
                 parse_mode='Markdown')
         else:
+            print(f'ВНИМАНИЕ! \nПользователь {call.from_user.id} не смог вывести список активной брони')
             bot.edit_message_text(
                 chat_id=call.from_user.id,
                 message_id=to_switch[0].message_id,
@@ -265,6 +284,7 @@ def bk_handler(call):
                 parse_mode='Markdown')
         to_switch.clear()
     elif call.data == 'bk_reject':
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} инициировал отмену брони')
         mes = bot.send_message(
                   call.from_user.id,
                   'Введите данные через запятую, или каждое с новой строки\nДанные для ввода:\n\nТип пользователя (Компания / Клиент)\nИНН / Имя и фамилия\nДата начала брони (В формате год-месяц-день)')
@@ -281,13 +301,13 @@ def bk_rej_in(message):
         if sq.bk_change(user_type, name, date):
             del_mes(message)
             if name.isdigit():
-                abc = 'ИНН'
+                info_type = 'ИНН'
             else:
-                abc = 'Имя и фамилия'
+                info_type = 'Имя и фамилия'
             bot.edit_message_text(
                 chat_id=message.from_user.id,
                 message_id=to_switch[1].message_id,
-                text=f'*Удаление брони*\nТип пользователя: {user_type}\n{abc}: {name}\nДата начала брони: {date}',
+                text=f'*Удаление брони*\nТип пользователя: {user_type}\n{info_type}: {name}\nДата начала брони: {date}',
                 parse_mode='Markdown')
             bot.send_message(
                 message.from_user.id,
@@ -295,13 +315,17 @@ def bk_rej_in(message):
                 reply_markup=markup,
                 parse_mode='Markdown'
             )
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} успешно удалил бронь.\nУдаленные данные\nТип пользователя: {user_type}\n{info_type}: {name}\nДата начала брони: {date}')
         else:
             bot.send_message(
                 message.from_user.id,
                 'При удалении возникла ошибка.',
                 reply_markup=markup,
                 parse_mode='Markdown')
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {message.chat.id} не смог удалить бронь\nВведенные данные\nТип пользователя: {user_type}\nИдентификатор: {name}\nДата начала брони: {date}')
+
     else:
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {message.chat.id} неверно ввел данные')
         bot.send_message(
             message.from_user.id,
             'Неверный ввод данных, повторите попытку.',
@@ -314,6 +338,7 @@ def bk_rej_in(message):
 
 @bot.callback_query_handler(func=lambda callback: callback.data.startswith('ch') and logged_in)
 def ch_handler(call):
+    print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {call.from_user.id} неверно ввел данные') # Im here
     global to_switch
     if call.data == 'ch_mm':
         markup = types.InlineKeyboardMarkup()
