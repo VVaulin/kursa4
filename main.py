@@ -17,7 +17,10 @@ bot = telebot.TeleBot('6031519919:AAFO0mD8GDuD3L8i9FFa1n9qJaNWMkfXP2E')
 
 @bot.message_handler(commands=['start'])
 def start_bot(message):
+    print(f'Пользователь {message.chat.id} запустил бота')
     global to_switch, to_del
+    to_switch.clear()
+    to_del.clear()
     rem_key = types.ReplyKeyboardRemove()
     bot.send_message(message.from_user.id,
                      "Приветствую!\nЯ – Ваш персональный помощник для работы с базой данных отеля _'Jewelry Nature'_",
