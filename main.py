@@ -173,7 +173,7 @@ def reg_handler(call):
         print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} инициировал регистрацию клиента')
         mes = bot.send_message(
                   call.from_user.id,
-                  'Введите данные через запятую, или каждое с новой строки\nДанные для ввода:\n\nИмя и фамилия\nНомер паспорта\nТелефонный номер\nЭлектранная почта')
+                  'Введите данные через запятую или каждое с новой строки\nДанные для ввода:\n\nИмя и фамилия\nНомер паспорта\nТелефонный номер\nЭлектранная почта')
         to_switch.append(mes)
         bot.register_next_step_handler(mes, reg_per_in)
     elif call.data == 'reg_add_comp':   # TODO: Дописать регистрацию
@@ -287,7 +287,7 @@ def bk_handler(call):
         print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} инициировал отмену брони')
         mes = bot.send_message(
                   call.from_user.id,
-                  'Введите данные через запятую, или каждое с новой строки\nДанные для ввода:\n\nТип пользователя (Компания / Клиент)\nИНН / Имя и фамилия\nДата начала брони (В формате год-месяц-день)')
+                  'Введите данные через запятую или каждое с новой строки\nДанные для ввода:\n\nТип пользователя (Компания / Клиент)\nИНН / Имя и фамилия\nДата начала брони (В формате год-месяц-день)')
         to_switch.append(mes)
         bot.register_next_step_handler(mes, bk_rej_in)
 
@@ -338,7 +338,7 @@ def bk_rej_in(message):
 
 @bot.callback_query_handler(func=lambda callback: callback.data.startswith('ch') and logged_in)
 def ch_handler(call):
-    print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {call.from_user.id} неверно ввел данные') # Im here
+    print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} перешел в меню Заселение')
     global to_switch
     if call.data == 'ch_mm':
         markup = types.InlineKeyboardMarkup()
@@ -358,6 +358,7 @@ def ch_handler(call):
         ch_today = sq.ch_today()
         markup = gen_markup('ch_mm')
         if ch_today is not None:
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} вывел список сегодняшего заселения')
             out = ''
             for i in range(0, len(ch_today)):
                 out += f'Имя и фамилия: {ch_today[i][0]}\nТелефон: {ch_today[i][1]}\nКорпус и комната: {ch_today[i][3]}, {ch_today[i][2]}\n\n'
@@ -368,6 +369,7 @@ def ch_handler(call):
                 reply_markup=markup,
                 parse_mode='Markdown')
         else:
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {call.from_user.id} не смог вывести список сегодняшнего заселения')
             bot.edit_message_text(
                 chat_id=call.from_user.id,
                 message_id=to_switch[0].message_id,
@@ -379,6 +381,7 @@ def ch_handler(call):
         ch_today = sq.ch_free()
         markup = gen_markup('ch_mm')
         if ch_today is not None:
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} вывел список свободных комнат')
             housing = ch_today[0][1]
             out = f'Корпус: {ch_today[0][1]}\nКомнаты: {ch_today[0][0]}'
 
@@ -395,6 +398,7 @@ def ch_handler(call):
                 reply_markup=markup,
                 parse_mode='Markdown')
         else:
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {call.from_user.id} не смог вывести список свободных комнат')
             bot.edit_message_text(
                 chat_id=call.from_user.id,
                 message_id=to_switch[0].message_id,
@@ -406,6 +410,7 @@ def ch_handler(call):
         ch_serv = sq.ch_serv()
         markup = gen_markup('ch_mm')
         if ch_serv is not None:
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} вывел список услуг')
             housing = ch_serv[0][2]
             out = f'Корпус: {ch_serv[0][2]}\nДоступный сервис, цена:\n'
             for i in range(0, len(ch_serv)):
@@ -422,6 +427,7 @@ def ch_handler(call):
                 reply_markup=markup,
                 parse_mode='Markdown')
         else:
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {call.from_user.id} не смог вывести список услуг')
             bot.edit_message_text(
                 chat_id=call.from_user.id,
                 message_id=to_switch[0].message_id,
@@ -434,6 +440,7 @@ def ch_handler(call):
 
 @bot.callback_query_handler(func=lambda callback: callback.data.startswith('ord') and logged_in)
 def ord_handler(call):
+    print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} перешел в меню Заказы')
     global to_switch
     if call.data == 'ord_mm':
         markup = types.InlineKeyboardMarkup()
@@ -451,27 +458,31 @@ def ord_handler(call):
             parse_mode='Markdown')
         to_switch = [mes]
     elif call.data == 'ord_zak':
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} инициировал просмотр заказов')
         mes = bot.send_message(
                   call.from_user.id,
                   'Введите ID заселения, по которому необходимо просмотреть заказы:')
         to_switch.append(mes)
         bot.register_next_step_handler(mes, ord_zak_in)
     elif call.data == 'ord_duty':
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} инициировал просмотр задолженностей клиента')
         mes = bot.send_message(
                   call.from_user.id,
                   'Введите имя и фамилию человека, задолженность которого необходимо узнать:')
         to_switch.append(mes)
         bot.register_next_step_handler(mes, ord_duty_in)
     elif call.data == 'ord_add':
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} инициировал добавление заказа')
         mes = bot.send_message(
                   call.from_user.id,
-                  'Введите данные через запятую, или каждое с новой строки\nДанные для ввода:\n\nИмя и фамилия\nНазвание услуги\nКоличетсво\nСтатус оплаты (Оплачено / Не оплачено)')
+                  'Введите данные через запятую или каждое с новой строки\nДанные для ввода:\n\nИмя и фамилия\nНазвание услуги\nКоличетсво\nСтатус оплаты (Оплачено / Не оплачено)')
         to_switch.append(mes)
         bot.register_next_step_handler(mes, ord_add_in)
     elif call.data == 'ord_del':
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} инициировал удаление заказа')
         mes = bot.send_message(
                   call.from_user.id,
-                  'Введите данные через запятую, или каждое с новой строки\nДанные для ввода:\n\nИмя и фамилия\nНазвание услуги')
+                  'Введите данные через запятую или каждое с новой строки\nДанные для ввода:\n\nИмя и фамилия\nНазвание услуги')
         to_switch.append(mes)
         bot.register_next_step_handler(mes, ord_add_in)
 
@@ -482,6 +493,7 @@ def ord_zak_in(message):
     if user_in.isdigit():
         ord_zak = sq.ord_zak(user_in)
         if ord_zak is not None:
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} вывел список заказов по ID заселения: {user_in}')
             del_mes(message)
             if ord_zak == []:
                 out = 'Клиент не совершал заказов'
@@ -501,12 +513,14 @@ def ord_zak_in(message):
                 reply_markup=markup,
                 parse_mode='Markdown')
         else:
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {message.chat.id} не смог вывести список заказов по ID заселения: {user_in}')
             bot.send_message(
                 message.from_user.id,
                 'При выводе данных возникла ошибка.',
                 reply_markup=markup,
                 parse_mode='Markdown')
     else:
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} неверно ввел данные: {user_in}')
         bot.send_message(
             message.from_user.id,
             'Неверный ввод данных, повторите попытку.',
@@ -522,6 +536,7 @@ def ord_duty_in(message):
     if len(user_in.split(' ')) == 2:
         ord_duty = sq.ord_duty(user_in)
         if ord_duty is not None:
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} успешно вывел задолженности клиента: {user_in}')
             del_mes(message)
             out = f'Имя клиента: {user_in}\nТелефон клиента: {ord_duty[0][0]}\nСумма долга: ${ord_duty[0][1]}'
             bot.edit_message_text(
@@ -535,12 +550,14 @@ def ord_duty_in(message):
                 reply_markup=markup,
                 parse_mode='Markdown')
         else:
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {message.chat.id} не смог вывести задолженность клиента: {user_in}')
             bot.send_message(
                 message.from_user.id,
                 'При выводе данных возникла ошибка.',
                 reply_markup=markup,
                 parse_mode='Markdown')
     else:
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} неверно ввел данные: {user_in}')
         bot.send_message(
             message.from_user.id,
             'Неверный ввод данных, повторите попытку.',
@@ -569,13 +586,16 @@ def ord_add_in(message):
                 'Заказ был успешно добавлен!',
                 reply_markup=markup,
                 parse_mode='Markdown')
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} успешно добавил заказ.\nВнесенные данные\nИмя клиента: {flname}\nНазвание услуги, количество и статус оплаты: {serv}, {quantity}, {stat}')
         else:
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {message.chat.id} не смог добавить заказ. Введенные данные: {user_in}')
             bot.send_message(
                 message.from_user.id,
                 'При выводе данных возникла ошибка.',
                 reply_markup=markup,
                 parse_mode='Markdown')
     else:
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} неверно ввел данные: {user_in}')
         bot.send_message(
             message.from_user.id,
             'Неверный ввод данных, повторите попытку.',
@@ -593,7 +613,7 @@ def ord_del_in(message):
         flname, serv = (divided[i] for i in range(0, len(divided)))
         if sq.ord_del(flname, serv):
             del_mes(message)
-            out = f'Имя клиента: {flname}\nНазвание услуги{serv}'
+            out = f'Имя клиента: {flname}\nНазвание услуги {serv}'
             bot.edit_message_text(
                 chat_id=message.from_user.id,
                 message_id=to_switch[1].message_id,
@@ -604,13 +624,16 @@ def ord_del_in(message):
                 'Последний заказ пользователя был удален!',
                 reply_markup=markup,
                 parse_mode='Markdown')
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} успешно удалил последний заказ: {user_in}')
         else:
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {message.chat.id} не смог удалить последний заказ: {user_in}')
             bot.send_message(
                 message.from_user.id,
                 'При выводе данных возникла ошибка.',
                 reply_markup=markup,
                 parse_mode='Markdown')
     else:
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} неверно ввел данные: {user_in}')
         bot.send_message(
             message.from_user.id,
             'Неверный ввод данных, повторите попытку.',
@@ -624,6 +647,7 @@ def ord_del_in(message):
 @bot.message_handler(commands=['exit'], func=lambda call: logged_in)
 @bot.callback_query_handler(func=lambda callback: callback.data == 'end_mm' and logged_in)
 def end_handler(call):
+    print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.user_in.id} закончил работу')
     global logged_in
     end_mes = '*Завершение работы.*\n\nХорошо поработали сегодня! Соединение с базой данных было успешно разорвано. До новых встреч.'
     if type(call) is types.CallbackQuery:
@@ -643,6 +667,7 @@ def end_handler(call):
 
 @bot.message_handler(commands=['menu', 'exit'], func=lambda call: not logged_in)
 def not_logged(message):
+    print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} попытался выполнить команду без авторизации')
     bot.send_message(message.from_user.id,
                      'Невозможно выполнить команду. Вы еще не авторизованы. Для авторизации воспользуйтесь командой /start',
                      parse_mode='Markdown')
