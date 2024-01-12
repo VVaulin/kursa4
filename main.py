@@ -176,7 +176,7 @@ def reg_handler(call):
                   'Введите данные через запятую или каждое с новой строки\nДанные для ввода:\n\nИмя и фамилия\nНомер паспорта\nТелефонный номер\nЭлектранная почта')
         to_switch.append(mes)
         bot.register_next_step_handler(mes, reg_per_in)
-    elif call.data == 'reg_add_comp':   # TODO: Дописать регистрацию
+    elif call.data == 'reg_add_comp':
         print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} инициировал регистрацию компании')
         mes = bot.send_message(
             call.from_user.id,
