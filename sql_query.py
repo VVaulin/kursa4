@@ -17,11 +17,23 @@ class QueryTool:
     def reg_per(self, flname, pas, phone, mail):
         try:
             self._cursor.execute('SET search_path TO hotel')
-            self._cursor.execute('CALL insert_info(\'%s\', \'%s\', \'%s\', \'%s\')' % (flname, pas, phone, mail))
+            self._cursor.execute('CALL insert_person(\'%s\', \'%s\', \'%s\', \'%s\')' % (flname, pas, phone, mail))
+            self._conn.commit()
         except Exception:
             return False
         else:
             return True
+
+    def reg_comp(self, comp_name, contact_name, itn, phone, mail):
+        try:
+            self._cursor.execute('SET search_path TO hotel')
+            self._cursor.execute('CALL insert_company(\'%s\', \'%s\', \'%s\', \'%s\', \'%s\')' % (comp_name, contact_name, itn, phone, mail))
+            self._conn.commit()
+        except Exception:
+            return False
+        else:
+            return True
+
 
     def bk_active(self):
         try:
@@ -36,6 +48,7 @@ class QueryTool:
         try:
             self._cursor.execute('SET search_path TO hotel')
             self._cursor.execute('CALL change(\'%s\', \'%s\', date \'%s\')' % (type_of_client, name, date))
+            self._conn.commit()
         except Exception:
             return False
         else:
@@ -90,6 +103,7 @@ class QueryTool:
         try:
             self._cursor.execute('SET search_path TO hotel')
             self._cursor.execute('CALL ord(\'%s\', \'%s\', \'%s\')' % (flname, serv, stat, quantity))
+            self._conn.commit()
         except Exception:
             return False
         else:
@@ -99,6 +113,7 @@ class QueryTool:
         try:
             self._cursor.execute('SET search_path TO hotel')
             self._cursor.execute('CALL dele(\'%s\', \'%s\')' % (flname, serv))
+            self._conn.commit()
         except Exception:
             return False
         else:

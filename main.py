@@ -178,14 +178,11 @@ def reg_handler(call):
         bot.register_next_step_handler(mes, reg_per_in)
     elif call.data == 'reg_add_comp':   # TODO: Дописать регистрацию
         print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {call.from_user.id} инициировал регистрацию компании')
-        markup = gen_markup('reg_mm')
-        bot.edit_message_text(
-            chat_id=call.from_user.id,
-            message_id=to_switch[0].message_id,
-            text='Функция еще не добавлена',
-            reply_markup=markup,
-            parse_mode='Markdown')
-        to_switch.clear()
+        mes = bot.send_message(
+            call.from_user.id,
+            'Введите данные через запятую или каждое с новой строки\nДанные для ввода:\n\nНазвание компании\nФИО контактного лица\nИНН\nТелефонный номер\nЭлектранная почта')
+        to_switch.append(mes)
+        bot.register_next_step_handler(mes, reg_comp_in)
 
 def reg_per_in(message):
     user_in = message.text
@@ -217,7 +214,46 @@ def reg_per_in(message):
             print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {message.chat.id} не смог зарегистрировать пользователя\nВнесенные данные\nИмя и фамилия: {flname}\nПаспорт: {pas}\nТелефонный номер: {phone}\nПочта: {mail}')
 
     else:
-        print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {message.chat.id} не смог зарегистрировать пользователя\nНеверный ввод данных')
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} не смог зарегистрировать пользователя\nНеверный ввод данных: {user_in}')
+        bot.send_message(
+            message.from_user.id,
+            'Неверный ввод данных, повторите попытку.',
+            reply_markup=markup,
+            parse_mode='Markdown')
+    to_switch.clear()
+    to_del.clear()
+
+def reg_comp_in(message):
+    user_in = message.text
+    to_del.append(message.message_id)
+    markup = gen_markup('reg_mm')
+    divided = divide_str(user_in)
+    if divided is not None and len(divided) == 5:
+        comp_name, contact_name, itn, phone, mail = (divided[i] for i in range(0, len(divided)))
+        if sq.reg_comp(comp_name, contact_name, itn, phone, mail):
+            del_mes(message)
+            bot.edit_message_text(
+                chat_id=message.from_user.id,
+                message_id=to_switch[1].message_id,
+                text=f'*Внесенные данные*\nНазвание компании: {comp_name}\nФИО контактного лица: {contact_name}\nИНН: {itn}\nТелефонный номер: {phone}\nЭлектранная почта: {mail}',
+                parse_mode='Markdown')
+            bot.send_message(
+                message.from_user.id,
+                'Данные были успешно внесены в базу данных!',
+                reply_markup=markup,
+                parse_mode='Markdown'
+            )
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} успешно добавил новую компанию\nВнесенные данные\nНазвание компании: {comp_name}\nФИО контактного лица: {contact_name}\nИНН: {itn}\nТелефонный номер: {phone}\nЭлектранная почта: {mail}')
+        else:
+            bot.send_message(
+                message.from_user.id,
+                'При внесении данных возникла ошибка.',
+                reply_markup=markup,
+                parse_mode='Markdown')
+            print(f'\n[{datetime.now().replace(microsecond=0)}]\nВНИМАНИЕ! Пользователь {message.chat.id} не смог зарегистрировать компанию\nВнесенные данные\nНазвание компании: {comp_name}\nФИО контактного лица: {contact_name}\nИНН: {itn}\nТелефонный номер: {phone}\nЭлектранная почта: {mail}')
+
+    else:
+        print(f'\n[{datetime.now().replace(microsecond=0)}]\nПользователь {message.chat.id} не смог зарегистрировать компанию\nНеверный ввод данных: {user_in}')
         bot.send_message(
             message.from_user.id,
             'Неверный ввод данных, повторите попытку.',
