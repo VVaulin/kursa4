@@ -292,18 +292,15 @@ def bk_handler(call):
                 if bk_active[i][0] == '':
                     if corp is None:
                         corp = bk_active[i][1]
-                        out += (f'\nКомпания: {corp}\nДаты брони: %s – %s\nПредоплата за комнаты: ${bk_active[i][2]}',
-                                bk_active[i][3].replace('-', '.'), bk_active[i][4].replace('-', '.'))
+                        out += (f'\nКомпания: {corp}\nДаты брони: %s – %s\nПредоплата за комнаты: ${bk_active[i][2]}' % (str(bk_active[i][3]).replace('-', '.'), str(bk_active[i][4]).replace('-', '.')))
                         continue
                     if corp == bk_active[i][1]:
                         out += f', ${bk_active[i][2]}'
                     else:
                         corp = bk_active[i][1]
-                        out += (f'\nКомпания: {corp}\nДаты брони: %s – %s\nПредоплата за комнаты: ${bk_active[i][2]}',
-                                bk_active[i][3].replace('-', '.'), bk_active[i][4].replace('-', '.'))
+                        out += (f'\nКомпания: {corp}\nДаты брони: %s – %s\nПредоплата за комнаты: ${bk_active[i][2]}' % (str(bk_active[i][3]).replace('-', '.'), str(bk_active[i][4]).replace('-', '.')))
                 else:
-                    out += (f'\nИмя и фамилия: {bk_active[i][0]}\nДата брони: %s – %s\nПредоплата за комнату: ${bk_active[i][2]}',
-                            bk_active[i][3].replace('-', '.'), bk_active[i][4].replace('-', '.'))
+                    out += (f'\nИмя и фамилия: {bk_active[i][0]}\nДата брони: %s – %s\nПредоплата за комнату: ${bk_active[i][2]}' % (str(bk_active[i][3]).replace('-', '.'), str(bk_active[i][4]).replace('-', '.')))
             bot.edit_message_text(
                 chat_id=call.from_user.id,
                 message_id=to_switch[0].message_id,
